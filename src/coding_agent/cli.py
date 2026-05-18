@@ -138,6 +138,7 @@ async def _run_from_args(args: argparse.Namespace) -> int:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
+    import sys; print(f"[DEBUG] sys.argv = {sys.argv}", file=sys.stderr)
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
         return asyncio.run(_run_from_args(args))

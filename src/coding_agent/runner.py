@@ -100,6 +100,7 @@ async def run_interactive(
     """
 
     output("Entering interactive mode. Type 'exit' or '/exit' to quit.")
+    output("Working directory: " + str(session.workspace_dir))
     output(format_commands_for_help(session))
     current_session = session
     while True:

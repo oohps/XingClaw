@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -20,9 +20,8 @@ from ai.types import Message
 
 from .serde import message_from_dict, message_to_dict
 
-
-def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+def _beijing_now_iso() -> str:
+    return datetime.now(timezone(timedelta(hours=8))).isoformat()
 
 
 def new_session_id() -> str:
@@ -50,8 +49,8 @@ class SessionStore:
             "system_prompt": system_prompt,
             "leaf_id": None,
             "parent_session_id": None,
-            "created_at": _utc_now_iso(),
-            "updated_at": _utc_now_iso(),
+            "created_at": _beijing_now_iso(),
+            "updated_at": _beijing_now_iso(),
         }
         self.meta_file.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
         if not self.session_file.exists():
@@ -59,7 +58,7 @@ class SessionStore:
                 "type": "session",
                 "version": 1,
                 "id": self.session_id,
-                "timestamp": _utc_now_iso(),
+                "timestamp": _beijing_now_iso(),
                 "cwd": str(self.workspace_dir.resolve()),
                 "parent_session": None,
             }
@@ -73,7 +72,7 @@ class SessionStore:
         if not self.meta_file.exists():
             return
         meta = json.loads(self.meta_file.read_text(encoding="utf-8"))
-        meta["updated_at"] = _utc_now_iso()
+        meta["updated_at"] = _beijing_now_iso()
         self.meta_file.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def read_meta(self) -> dict[str, Any] | None:
@@ -83,7 +82,7 @@ class SessionStore:
 
     def append_context_message(self, message: Message) -> None:
         entry = {
-            "ts": _utc_now_iso(),
+            "ts": _beijing_now_iso(),
             "message": message_to_dict(message),
         }
         with self.context_file.open("a", encoding="utf-8") as fp:
@@ -99,7 +98,7 @@ class SessionStore:
     def rewrite_context_messages(self, messages: list[Message]) -> None:
         lines = []
         for msg in messages:
-            lines.append(json.dumps({"ts": _utc_now_iso(), "message": message_to_dict(msg)}, ensure_ascii=False))
+            lines.append(json.dumps({"ts": _beijing_now_iso(), "message": message_to_dict(msg)}, ensure_ascii=False))
         self.context_file.write_text(("\n".join(lines) + ("\n" if lines else "")), encoding="utf-8")
         self.touch_updated_at()
         self.rewrite_session_messages(messages)
@@ -155,7 +154,7 @@ class SessionStore:
             "type": "message",
             "id": entry_id,
             "parent_id": parent_id,
-            "timestamp": _utc_now_iso(),
+            "timestamp": _beijing_now_iso(),
             "message": message_to_dict(message),
         }
         new_lines = ([header] if header else []) + [*entries, entry]
@@ -173,7 +172,7 @@ class SessionStore:
             "type": "session",
             "version": 1,
             "id": self.session_id,
-            "timestamp": _utc_now_iso(),
+            "timestamp": _beijing_now_iso(),
             "cwd": str(self.workspace_dir.resolve()),
             "parent_session": None,
         }
@@ -186,7 +185,7 @@ class SessionStore:
                     "type": "message",
                     "id": entry_id,
                     "parent_id": parent_id,
-                    "timestamp": _utc_now_iso(),
+                    "timestamp": _beijing_now_iso(),
                     "message": message_to_dict(message),
                 }
             )

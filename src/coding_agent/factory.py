@@ -122,7 +122,7 @@ def create_agent_session(options: AgentSessionOptions | CreateAgentSessionOption
     if isinstance(options, AgentSessionOptions):
         return AgentSession(options)
 
-    workspace = Path(options.workspace_dir)
+    workspace = Path(options.workspace_dir).resolve()
     resources = WorkspaceResourceLoader(workspace).load() if options.load_workspace_resources else None
     restored_meta = None
     if options.session_id:

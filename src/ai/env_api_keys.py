@@ -15,4 +15,6 @@ def get_env_api_key(provider: str) -> str | None:
     # OpenAI 标准/兼容 provider
     if provider in {"openai", "openai-standard"}:
         return os.getenv("OPENAI_API_KEY")
+    if provider == "deepseek":
+        return os.getenv("DEEPSEEK_API_KEY")
     return None

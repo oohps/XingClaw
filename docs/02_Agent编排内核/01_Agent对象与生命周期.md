@@ -42,7 +42,7 @@ class AgentOptions:
     messages: list[AgentMessage] = ... # 初始消息历史（用于恢复会话）
     thinking_level: str = "off"     # 思考模式等级
     tool_execution: str = "parallel" # 工具执行方式：并行 or 串行
-    
+
     # 以下是高级钩子函数（先了解有这回事即可）
     convert_to_llm: ...       # 消息转换函数
     transform_context: ...    # 上下文变换函数
@@ -65,13 +65,13 @@ class Agent:
             messages=list(options.messages),
         )
         self._options = options
-        
+
         # 事件监听器列表——谁想知道 Agent 在干嘛，就注册一个监听器
         self._listeners: list[AgentEventSink] = []
-        
+
         # 后台任务引用——用于 abort 取消
         self._stream_task: asyncio.Task | None = None
-        
+
         # 消息队列——用于在运行过程中动态注入消息
         self._steering_queue: list[AgentMessage] = []
         self._follow_up_queue: list[AgentMessage] = []
@@ -132,6 +132,7 @@ async def _start_run(self, prompts, continue_mode):
         tools=list(self._state.tools),
     )
 
+    coro = run_agent_loop(prompts=prompts, context=context, config=cfg, emit=self._dispatch_event)
     # 启动后台任务（run_agent_loop 是核心循环，下一篇详细讲）
     self._stream_task = asyncio.create_task(coro)
     try:
